@@ -1,8 +1,24 @@
+#define MAX_MAHASISWA 50
+#define PANJANG_NIM 9
+#define PANJANG_NAMA 50
+
 #include <stdio.h>
-#include <string.h>
+#include "fitur1_input.h"
+#include "fitur5_daftarNilai.h"
+
+int samaString(const char a[], const char b[]) {
+    int i = 0;
+    while (a[i] != '\0' && b[i] != '\0') {
+        if (a[i] != b[i]) {
+            return 0;
+        }
+        i++;
+    }
+    return a[i] == b[i];
+}
 
 void cariMahasiswa(int jumlahMahasiswa, char nim[][9], char nama[][50],
-                   float nilai[][4], int nilaiDiinput[]) {
+    float nilai[][4], int nilaiDiinput[]) {
     char nimDicari[9];
     int ditemukan = 0;
 
@@ -12,13 +28,16 @@ void cariMahasiswa(int jumlahMahasiswa, char nim[][9], char nama[][50],
     }
 
     printf("\nMasukkan NIM mahasiswa yang ingin dicari: ");
-    if (scanf("%8s", nimDicari) != 1) {
+    if (scanf("%9s", nimDicari) != 1) {
         printf("NIM tidak valid.\n");
         return;
     }
 
     for (int i = 0; i < jumlahMahasiswa; i++) {
-        if (strcmp(nim[i], nimDicari) == 0) {
+        if (!samaString(nim[i], nimDicari)) {
+            continue;
+        }
+
             printf("\nData mahasiswa ditemukan\n");
             printf("Nama: %s\n", nama[i]);
             printf("NIM : %s\n", nim[i]);
@@ -34,7 +53,6 @@ void cariMahasiswa(int jumlahMahasiswa, char nim[][9], char nama[][50],
 
             ditemukan = 1;
             break;
-        }
     }
 
     if (!ditemukan) {
@@ -42,19 +60,20 @@ void cariMahasiswa(int jumlahMahasiswa, char nim[][9], char nama[][50],
     }
 }
 
+
 int main(){
     int jumlahMahasiswa = 0, pilih, i, j;
-    int maxMahasiswa = 50;
-    char nim[maxMahasiswa][9];
-    char nama[maxMahasiswa][50];
-    float nilai[maxMahasiswa][4];
-    int nilaiDiinput[50] = {0};
+    char nim[MAX_MAHASISWA][PANJANG_NIM];
+    char nama[MAX_MAHASISWA][PANJANG_NAMA];
+    float nilai[MAX_MAHASISWA][4];
+    int nilaiDiinput[MAX_MAHASISWA] = {0};
+    int nilaiAkhir;
     
     //Menu
     do{
-        printf("\n============================================================\n");
-        printf("======  SISTEM PENGELOLAAN NILAI AKADEMIK MAHASISWA  =======\n");
-        printf("============================================================\n");
+        printf("\n================================================================\n");
+        printf("======  SISTEM PENGELOLAAN NILAI AKADEMIK MAHASISWA  ===========\n");
+        printf("================================================================\n");
         printf("1. Input data mahasiswa (NIM & nama)\n");
         printf("2. Input nilai (tugas, kuis, UTS, UAS)\n");
         printf("3. Atur bobot & hitung ulang nilai akhir\n");
@@ -64,38 +83,28 @@ int main(){
         printf("7. Statistik kelas\n");
         printf("8. Daftar mahasiswa perlu remedial\n");
         printf("0. Keluar\n");
-        printf("============================================================\n");
+        printf("================================================================\n");
         printf("Pilih fitur yang akan digunakan : ");
         scanf("%d", &pilih);
         
         switch(pilih){
+            //Menu Input Data Mahasiswa
             case 1:
             
             printf("============================================================\n");
             printf("                     Input Data Mahasiswa                   \n");
             printf("============================================================\n");
-            printf("Jumlah mahasiswa yang akan dimasukkan : ");
-            if (scanf("%d", &jumlahMahasiswa) != 1 ||
-                jumlahMahasiswa < 1 || jumlahMahasiswa > maxMahasiswa) {
-                printf("Jumlah mahasiswa harus antara 1 dan %d.\n", maxMahasiswa);
-                jumlahMahasiswa = 0;
-                break;
-            }
-
-            for (i = 0; i < jumlahMahasiswa; i++) {
-                nilaiDiinput[i] = 0;
-                int c;
-                while ((c = getchar()) != '\n' && c != EOF);
-                printf("\nMahasiswa ke-%d", i+1);
-                printf("\nMasukkan Nama Mahasiswa : ");
-                scanf(" %49[^\n]", nama[i]);
-                printf("\nMasukkan NIM Mahasiswa : ");
-                scanf("%9s", nim[i]);
-            }
-                break;
-
+            inputMahasiswa(nim, nama, &jumlahMahasiswa);
+            break;
+            
+            
+            
+            //Input Nilai Mahasiswa
             case 2:
             if (jumlahMahasiswa == 0) {
+            printf("============================================================\n");
+            printf("                   Input Niali Mahasiswa                    \n");
+            printf("============================================================\n");
                 printf("Input data mahasiswa terlebih dahulu.\n");
                 break;
             }
@@ -121,24 +130,41 @@ int main(){
                        nilai[i][0], nilai[i][1], nilai[i][2], nilai[i][3]);
             }
             break;
+            
 
-            //     break;
-            // case '3':
+
+
+            //Atur Bobot Nilai & Hitung Nilai Akhir
+            // case 3:
             //     aturBobotNilai(); 
             //     break;
-            // case '4':
+
+
+
+            //Status Kelulusan
+            // case 4:
             //     gradeNilai();
             //     break;
-            // case '5':
-            //     daftarMahasiswa(); 
-            //     break;
+
+
+            
+            //Daftar Mahasiswa & Akumulasi Nilainya Masing-masing
+            case 5:
+                tampilkanDaftarNilai(nim, nama, nilaiAkhir, jumlahMahasiswa); 
+                break;
+            
+            //Cari Mahasiswa dengan NIM
             case 6:
                 cariMahasiswa(jumlahMahasiswa, nim, nama, nilai, nilaiDiinput);
                 break;
-            // case '7':
+
+            
+
+            //
+            // case 7:
             //     statistikKelas(); 
             //     break;
-            // case '8':
+            // case 8:
             //     daftarRemedial();
             //     break;
             case 0:
