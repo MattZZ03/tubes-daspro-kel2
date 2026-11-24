@@ -4,61 +4,15 @@
 
 #include <stdio.h>
 #include "fitur1_input.h"
+// fitur2 sudah meng-include fitur3_hitungNilaiBobot.h, jadi fitur3 tidak
+// di-include lagi di sini supaya inputBobot() & hitungNilaiAkhir() tidak
+// terdefinisi dua kali.
+#include "fitur2_inputNilaiBobot.h"
+#include "fitur4_grade.h"
 #include "fitur5_daftarNilai.h"
-
-int samaString(const char a[], const char b[]) {
-    int i = 0;
-    while (a[i] != '\0' && b[i] != '\0') {
-        if (a[i] != b[i]) {
-            return 0;
-        }
-        i++;
-    }
-    return a[i] == b[i];
-}
-
-void cariMahasiswa(int jumlahMahasiswa, char nim[][9], char nama[][50],
-    float nilai[][4], int nilaiDiinput[]) {
-    char nimDicari[9];
-    int ditemukan = 0;
-
-    if (jumlahMahasiswa == 0) {
-        printf("Input data mahasiswa terlebih dahulu.\n");
-        return;
-    }
-
-    printf("\nMasukkan NIM mahasiswa yang ingin dicari: ");
-    if (scanf("%9s", nimDicari) != 1) {
-        printf("NIM tidak valid.\n");
-        return;
-    }
-
-    for (int i = 0; i < jumlahMahasiswa; i++) {
-        if (!samaString(nim[i], nimDicari)) {
-            continue;
-        }
-
-            printf("\nData mahasiswa ditemukan\n");
-            printf("Nama: %s\n", nama[i]);
-            printf("NIM : %s\n", nim[i]);
-
-            if (nilaiDiinput[i]) {
-                printf("Tugas: %.2f\n", nilai[i][0]);
-                printf("Quiz : %.2f\n", nilai[i][1]);
-                printf("UTS  : %.2f\n", nilai[i][2]);
-                printf("UAS  : %.2f\n", nilai[i][3]);
-            } else {
-                printf("Nilai belum diinput.\n");
-            }
-
-            ditemukan = 1;
-            break;
-    }
-
-    if (!ditemukan) {
-        printf("Mahasiswa dengan NIM %s tidak ditemukan.\n", nimDicari);
-    }
-}
+#include "fitur6_cariNim.h"   // sudah berisi samaString() & cariMahasiswa()
+#include "fitur7_statistik.h"
+#include "fitur8_remedial.h"
 
 
 int main(){
@@ -67,13 +21,20 @@ int main(){
     char nama[MAX_MAHASISWA][PANJANG_NAMA];
     float nilai[MAX_MAHASISWA][4];
     int nilaiDiinput[MAX_MAHASISWA] = {0};
-    int nilaiAkhir;
-    
+    float nilaiAkhir[MAX_MAHASISWA] = {0};
+
+    // Bobot awal: Tugas, Quiz, UTS, UAS.
+    float bobot[4] = {50, 10, 20, 20};
+
+    // Penampung hasil grade & status kelulusan.
+    char grade;
+    int status;
+
     //Menu
     do{
-        printf("\n================================================================\n");
-        printf("======  SISTEM PENGELOLAAN NILAI AKADEMIK MAHASISWA  ===========\n");
-        printf("================================================================\n");
+        printf("\n=================================================================\n");
+        printf("=========  SISTEM PENGELOLAAN NILAI AKADEMIK MAHASISWA  =========\n");
+        printf("=================================================================\n");
         printf("1. Input data mahasiswa (NIM & nama)\n");
         printf("2. Input nilai (tugas, kuis, UTS, UAS)\n");
         printf("3. Atur bobot & hitung ulang nilai akhir\n");
@@ -86,24 +47,24 @@ int main(){
         printf("================================================================\n");
         printf("Pilih fitur yang akan digunakan : ");
         scanf("%d", &pilih);
-        
+
         switch(pilih){
             //Menu Input Data Mahasiswa
             case 1:
-            
+
             printf("============================================================\n");
             printf("                     Input Data Mahasiswa                   \n");
             printf("============================================================\n");
             inputMahasiswa(nim, nama, &jumlahMahasiswa);
             break;
-            
-            
-            
+
+
+
             //Input Nilai Mahasiswa
             case 2:
             if (jumlahMahasiswa == 0) {
             printf("============================================================\n");
-            printf("                   Input Niali Mahasiswa                    \n");
+            printf("                   Input Nilai Mahasiswa                    \n");
             printf("============================================================\n");
                 printf("Input data mahasiswa terlebih dahulu.\n");
                 break;
@@ -126,47 +87,88 @@ int main(){
                 }
 
                 nilaiDiinput[i] = 1;
+
+                // Hitung nilai akhir memakai bobot yang sedang berlaku.
+                nilaiAkhir[i] = hitungNilaiAkhir(nilai[i], bobot);
+
                 printf("Tugas: %.2f | Quiz: %.2f | UTS: %.2f | UAS: %.2f\n",
                        nilai[i][0], nilai[i][1], nilai[i][2], nilai[i][3]);
             }
             break;
-            
+
+
 
 
 
             //Atur Bobot Nilai & Hitung Nilai Akhir
-            // case 3:
-            //     aturBobotNilai(); 
-            //     break;
+            case 3:
+                inputBobot(bobot);
+
+                // Hitung ulang nilai akhir semua mahasiswa yang nilainya sudah diinput.
+                for (i = 0; i < jumlahMahasiswa; i++) {
+                    if (nilaiDiinput[i]) {
+                        nilaiAkhir[i] = hitungNilaiAkhir(nilai[i], bobot);
+                    }
+                }
+                break;
 
 
 
             //Status Kelulusan
-            // case 4:
-            //     gradeNilai();
-            //     break;
+            case 4:
+                if (jumlahMahasiswa == 0) {
+                    printf("\nInput data mahasiswa terlebih dahulu.\n");
+                    break;
+                }
+
+                printf("\n========== GRADE & STATUS KELULUSAN ==========\n\n");
+                printf("%-5s %-20s %-25s %-12s %-6s %-12s\n",
+                       "No.", "NIM", "Nama", "Nilai Akhir", "Grade", "Status");
+                printf("------------------------------------------------------------------------------------\n");
+
+                for (i = 0; i < jumlahMahasiswa; i++) {
+                    if (!nilaiDiinput[i]) {
+                        printf("%-5d %-20s %-25s %s\n",
+                               i + 1, nim[i], nama[i], "Nilai belum diinput");
+                        continue;
+                    }
+
+                    prosesGradeStatus(nilaiAkhir[i], &grade, &status);
+
+                    printf("%-5d %-20s %-25s %-12.2f %-6c %-12s\n",
+                           i + 1, nim[i], nama[i], nilaiAkhir[i], grade,
+                           (status == LULUS) ? "LULUS" : "TIDAK LULUS");
+                }
+                break;
 
 
-            
+
             //Daftar Mahasiswa & Akumulasi Nilainya Masing-masing
             case 5:
-                tampilkanDaftarNilai(nim, nama, nilaiAkhir, jumlahMahasiswa); 
+                tampilkanDaftarNilai(nim, nama, nilaiAkhir, jumlahMahasiswa);
                 break;
-            
+
+
+
             //Cari Mahasiswa dengan NIM
             case 6:
                 cariMahasiswa(jumlahMahasiswa, nim, nama, nilai, nilaiDiinput);
                 break;
 
-            
 
-            //
-            // case 7:
-            //     statistikKelas(); 
-            //     break;
-            // case 8:
-            //     daftarRemedial();
-            //     break;
+
+            //Statistik Kelas
+            case 7:
+                tampilkanStatistik(nilaiAkhir, jumlahMahasiswa);
+                break;
+
+
+
+            //Keterangan Remedial Mahasiswa
+            case 8:
+                tampilkanRemedial(nim, nama, nilaiAkhir, jumlahMahasiswa);
+                break;
+
             case 0:
                 printf("Terima kasih telah menggunakan layanan kami\n\n");
                 break;
@@ -174,41 +176,6 @@ int main(){
                 printf("Menu tidak tersedia atau inputan salah!\n\n");
         }
     } while(pilih != 0);
-}
-
-
-/*
-    for(i = 0; i < jumlahmahasiswa; i++){
-        printf("\nMahasiswa %d\n", i+1);
-        printf("Masukkan NIM Mahasiswa : ");
-        scanf("%8s", nim[i]);
-        printf("Masukkan Nama Mahasiswa : ");
-        scanf(" %49[^\n]", nama[i]);
-    }
-
-    for(i = 0; i < jumlahmahasiswa; i++){
-        printf("\nMasukkan nilai tugas mahasiswa %d : ", i+1);
-        scanf("%f", &tugas[i]);
-        printf("Masukkan nilai quiz mahasiswa %d : ", i+1);
-        scanf("%f", &quiz[i]);
-        printf("Masukkan nilai UTS mahasiswa %d : ", i+1);
-        scanf("%f", &uts[i]);
-        printf("Masukkan nilai UAS mahasiswa %d : ", i+1);
-        scanf("%f", &uas[i]);
-
-
-        printf("\nNilai Mahasiswa %d (%s)\n", i+1, nama[i]);
-        printf("Tugas : %.2f\nQuiz  : %.2f\nUTS   : %.2f\nUAS   : %.2f\nRata-rata : %.2f\n", tugas[i], quiz[i], uts[i], uas[i], (tugas[i] + quiz[i] + uts[i] + uas[i])/4);
-    }
-
-    printf("\n%-4s %-12s %-20s %7s %7s %7s %7s\n",
-       "No", "NIM", "Nama", "Tugas", "Quiz", "UTS", "UAS");
-    for(i = 0; i < jumlahmahasiswa; i++){
-        printf("%-4d %-12s %-20s %7.2f %7.2f %7.2f %7.2f\n",
-            i+1, nim[i], nama[i], tugas[i], quiz[i], uts[i], uas[i]);
-    }
-
 
     return 0;
-
-    */
+}
