@@ -4,13 +4,11 @@
 
 #include <stdio.h>
 #include "fitur1_input.h"
-// fitur2 sudah meng-include fitur3_hitungNilaiBobot.h, jadi fitur3 tidak
-// di-include lagi di sini supaya inputBobot() & hitungNilaiAkhir() tidak
-// terdefinisi dua kali.
 #include "fitur2_inputNilaiBobot.h"
+//fitur3_hitungNilaiBobot.h sudah diinclude kedalam file fitur2_inputNilaiBobot.h
 #include "fitur4_grade.h"
 #include "fitur5_daftarNilai.h"
-#include "fitur6_cariNim.h"   // sudah berisi samaString() & cariMahasiswa()
+#include "fitur6_cariNim.h"
 #include "fitur7_statistik.h"
 #include "fitur8_remedial.h"
 

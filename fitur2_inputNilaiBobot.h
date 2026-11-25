@@ -2,8 +2,7 @@
 #include "fitur3_hitungNilaiBobot.h"
 
 // Membungkus logika main ke dalam fungsi agar aman dijadikan header file
-void runMainProgram()
-{
+void runMainProgram(){
     // Array untuk menyimpan nilai Tugas, Quiz, UTS, dan UAS.
     float nilai[4];
 
